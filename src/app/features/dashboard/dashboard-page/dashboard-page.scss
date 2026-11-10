@@ -3,3 +3,33 @@
   flex-direction: column;
   gap: 1.25rem;
 }
+
+.dashboard-state {
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  color: #334155;
+}
+
+.dashboard-state--error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  border-color: #ffcdd2;
+  color: #b71c1c;
+}
+
+.dashboard-state__retry {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  background-color: #1976d2;
+  color: #fff;
+}
+
+.dashboard-state__retry:focus-visible {
+  outline: 2px solid #0f172a;
+  outline-offset: 2px;
+}

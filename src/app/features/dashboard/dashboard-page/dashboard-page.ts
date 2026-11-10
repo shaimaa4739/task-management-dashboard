@@ -1,6 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { Priority, Task } from '../../tasks/models/task.model';
-import { BOARD_COLUMNS, TASKS } from '../task.data';
+import { TaskService } from '../../tasks/services/task.service';
+import { mapTaskDtoToTask } from '../../tasks/utils/task.mapper';
+import { BOARD_COLUMNS } from '../task.data';
 import { StatsSummary } from '../components/stats-summary/stats-summary';
 import { TaskFilterBar } from '../components/task-filter-bar/task-filter-bar';
 import { TaskBoard } from '../components/task-board/task-board';
@@ -17,13 +19,6 @@ const FILTERS: FilterOption[] = [
   { id: 'todo', label: 'To Do' },
   { id: 'in-progress', label: 'In Progress' },
   { id: 'done', label: 'Done' },
-];
-
-const STATS: StatCard[] = [
-  { label: 'Total Tasks', icon: '📊', value: 156, note: '+12 this week', tone: 'success' },
-  { label: 'Completed', icon: '✅', value: 89, note: '+8 today', tone: 'success' },
-  { label: 'In Progress', icon: '🔄', value: 42, note: 'Same as yesterday', tone: 'neutral' },
-  { label: 'Overdue', icon: '⚠️', value: 25, note: '+3 today', tone: 'danger' },
 ];
 
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
@@ -45,8 +40,40 @@ const SORTS: Record<SortId, (a: Task, b: Task) => number> = {
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
+  private readonly taskService = inject(TaskService);
+
   protected readonly filters = FILTERS;
-  protected readonly stats = STATS;
+  protected readonly tasks = computed(() =>
+    this.taskService.tasks().map(mapTaskDtoToTask),
+  );
+  protected readonly isLoading = this.taskService.isLoading;
+  protected readonly error = this.taskService.error;
+
+  protected readonly stats = computed<StatCard[]>(() => {
+    const tasks = this.tasks();
+    const completed = tasks.filter((task) => task.status.kind === 'completed').length;
+    const inProgress = tasks.filter((task) => task.column === 'in-progress').length;
+    const overdue = tasks.filter((task) => task.status.kind === 'overdue').length;
+
+    return [
+      {
+        label: 'Total Tasks',
+        icon: '📊',
+        value: tasks.length,
+        note: 'Current collection',
+        tone: 'success',
+      },
+      { label: 'Completed', icon: '✅', value: completed, note: 'Current status', tone: 'success' },
+      {
+        label: 'In Progress',
+        icon: '🔄',
+        value: inProgress,
+        note: 'Current status',
+        tone: 'neutral',
+      },
+      { label: 'Overdue', icon: '⚠️', value: overdue, note: 'Current due dates', tone: 'danger' },
+    ];
+  });
 
   protected readonly filter = signal<FilterId>('all');
   protected readonly sortBy = signal<SortId>('priority');
@@ -54,13 +81,19 @@ export class DashboardPage {
   protected readonly columns = computed<BoardColumn[]>(() => {
     const sort = SORTS[this.sortBy()];
     const activeFilter = this.filter();
+    const tasks = this.tasks();
 
     return BOARD_COLUMNS.filter(
       (column) => activeFilter === 'all' || activeFilter === column.id,
-    ).map((column) => ({
-      ...column,
-      tasks: TASKS.filter((task) => task.column === column.id).sort(sort),
-    }));
+    ).map((column) => {
+      const columnTasks = tasks.filter((task) => task.column === column.id);
+
+      return {
+        ...column,
+        count: columnTasks.length,
+        tasks: columnTasks.sort(sort),
+      };
+    });
   });
 
   protected onFilterChange(filter: FilterId): void {
@@ -69,6 +102,10 @@ export class DashboardPage {
 
   protected onSortChange(sort: SortId): void {
     this.sortBy.set(sort);
+  }
+
+  protected onRetry(): void {
+    this.taskService.reload();
   }
 
   protected onNewTask(): void {
