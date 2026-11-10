@@ -13,6 +13,10 @@ describe('StatsSummary', () => {
 
     fixture = TestBed.createComponent(StatsSummary);
     component = fixture.componentInstance;
+    fixture.componentRef.setInput('stats', [
+      { label: 'Total Tasks', icon: 'tasks', value: 0, note: 'No change', tone: 'neutral' },
+    ]);
+    fixture.detectChanges();
     await fixture.whenStable();
   });
 
