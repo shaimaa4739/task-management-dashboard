@@ -1,1 +1,26 @@
-<p>task-filter-bar works!</p>
+<div class="surface toolbar">
+  <div class="toolbar__filters" role="group" aria-label="Filter tasks">
+    @for (option of filters(); track option.id) {
+      <button
+        type="button"
+        class="tab-button"
+        [class.active]="activeFilter() === option.id"
+        [attr.aria-pressed]="activeFilter() === option.id"
+        (click)="filterChange.emit(option.id)"
+      >
+        {{ option.label }}
+      </button>
+    }
+  </div>
+
+  <div class="toolbar__actions">
+    <div class="toolbar__select">
+      <select aria-label="Sort tasks" class="toolbar__sort" (change)="onSortChange($event)">
+        <option value="priority" [selected]="sortBy() === 'priority'">Priority</option>
+        <option value="due-date" [selected]="sortBy() === 'due-date'">Due date</option>
+      </select>
+      <span aria-hidden="true" class="toolbar__chevron">▾</span>
+    </div>
+    <button type="button" class="new-task" (click)="newTask.emit()">+ New Task</button>
+  </div>
+</div>

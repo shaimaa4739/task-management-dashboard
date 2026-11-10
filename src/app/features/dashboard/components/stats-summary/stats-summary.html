@@ -1,1 +1,12 @@
-<p>stats-summary works!</p>
+<section aria-label="Task summary" class="stats">
+  @for (stat of stats(); track stat.label) {
+    <article class="surface stat-card">
+      <p class="stat-card__label">
+        <span aria-hidden="true">{{ stat.icon }}</span>
+        <span>{{ stat.label }}</span>
+      </p>
+      <p class="stat-card__value">{{ stat.value }}</p>
+      <p class="stat-card__note" [class]="'stat-card__note--' + stat.tone">{{ stat.note }}</p>
+    </article>
+  }
+</section>

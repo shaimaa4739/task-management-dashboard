@@ -1,1 +1,20 @@
-<p>task-board works!</p>
+<div class="board" [class.board--multi]="columns().length > 1">
+  @for (column of columns(); track column.id) {
+    <section class="column" [attr.aria-labelledby]="'column-' + column.id">
+      <header class="column__header">
+        <h2 [id]="'column-' + column.id" class="column__title">
+          {{ column.title }}
+        </h2>
+        <span class="column__count">
+          {{ column.count }}
+        </span>
+      </header>
+
+      <div class="column__tasks">
+        @for (task of column.tasks; track task.id) {
+          <app-task-card [task]="task" />
+        }
+      </div>
+    </section>
+  }
+</div>

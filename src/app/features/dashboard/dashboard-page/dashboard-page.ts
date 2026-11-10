@@ -1,27 +1,23 @@
 import { Component, computed, signal } from '@angular/core';
-import { TaskCard } from '../../tasks/components/task-card/task-card';
-import { ColumnId, Priority, Task } from '../../tasks/models/task.model';
+import { Priority, Task } from '../../tasks/models/task.model';
 import { BOARD_COLUMNS, TASKS } from '../task.data';
+import { StatsSummary } from '../components/stats-summary/stats-summary';
+import { TaskFilterBar } from '../components/task-filter-bar/task-filter-bar';
+import { TaskBoard } from '../components/task-board/task-board';
+import {
+  BoardColumn,
+  FilterId,
+  FilterOption,
+  SortId,
+  StatCard,
+} from '../models/dashboard.model';
 
-type FilterId = 'all' | ColumnId;
-type SortId = 'priority' | 'due-date';
-
-const FILTERS: { id: FilterId; label: string }[] = [
+const FILTERS: FilterOption[] = [
   { id: 'all', label: 'All' },
   { id: 'todo', label: 'To Do' },
   { id: 'in-progress', label: 'In Progress' },
   { id: 'done', label: 'Done' },
 ];
-
-type StatTone = 'success' | 'neutral' | 'danger';
-
-interface StatCard {
-  label: string;
-  icon: string;
-  value: number;
-  note: string;
-  tone: StatTone;
-}
 
 const STATS: StatCard[] = [
   { label: 'Total Tasks', icon: '📊', value: 156, note: '+12 this week', tone: 'success' },
@@ -44,29 +40,38 @@ const SORTS: Record<SortId, (a: Task, b: Task) => number> = {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [TaskCard],
+  imports: [StatsSummary, TaskFilterBar, TaskBoard],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
   protected readonly filters = FILTERS;
   protected readonly stats = STATS;
+
   protected readonly filter = signal<FilterId>('all');
   protected readonly sortBy = signal<SortId>('priority');
 
-  protected readonly columns = computed(() => {
+  protected readonly columns = computed<BoardColumn[]>(() => {
     const sort = SORTS[this.sortBy()];
     const activeFilter = this.filter();
 
-    return BOARD_COLUMNS.filter((column) => activeFilter === 'all' || activeFilter === column.id).map(
-      (column) => ({
-        ...column,
-        tasks: TASKS.filter((task) => task.column === column.id).sort(sort),
-      }),
-    );
+    return BOARD_COLUMNS.filter(
+      (column) => activeFilter === 'all' || activeFilter === column.id,
+    ).map((column) => ({
+      ...column,
+      tasks: TASKS.filter((task) => task.column === column.id).sort(sort),
+    }));
   });
 
-  protected onSortChange(event: Event): void {
-    this.sortBy.set((event.target as HTMLSelectElement).value as SortId);
+  protected onFilterChange(filter: FilterId): void {
+    this.filter.set(filter);
+  }
+
+  protected onSortChange(sort: SortId): void {
+    this.sortBy.set(sort);
+  }
+
+  protected onNewTask(): void {
+    // TODO: open the new-task dialog / navigate to the create form
   }
 }
