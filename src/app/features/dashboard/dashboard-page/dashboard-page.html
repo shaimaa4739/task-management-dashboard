@@ -20,9 +20,15 @@
 
     <app-task-filter-bar
       [filters]="filters"
+      [priorityOptions]="priorityOptions"
+      [assigneeOptions]="assigneeOptions()"
       [activeFilter]="filter()"
+      [activePriority]="priorityFilter()"
+      [activeAssignee]="assigneeFilter()"
       [sortBy]="sortBy()"
       (filterChange)="onFilterChange($event)"
+      (priorityChange)="onPriorityChange($event)"
+      (assigneeChange)="onAssigneeChange($event)"
       (sortChange)="onSortChange($event)"
       (newTask)="onNewTask()"
     />

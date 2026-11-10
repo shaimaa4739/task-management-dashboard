@@ -18,7 +18,7 @@ export interface TaskDto {
   dueDate: string;
   isOverdue?: boolean;
   completedAt?: string;
-  assignee: TaskAssigneeDto;
+  assignee?: TaskAssigneeDto;
   tags: string[];
   createdAt: string;
   updatedAt: string;

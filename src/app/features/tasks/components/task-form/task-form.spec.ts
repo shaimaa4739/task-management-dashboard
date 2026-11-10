@@ -86,10 +86,10 @@ describe('TaskForm', () => {
       priority: existingTask.priority,
       status: existingTask.status,
       dueDate: existingTask.dueDate,
-      assigneeId: existingTask.assignee.id,
-      assigneeName: existingTask.assignee.name,
-      assigneeAvatar: existingTask.assignee.avatar,
-      assigneeEmail: existingTask.assignee.email,
+      assigneeId: existingTask.assignee!.id,
+      assigneeName: existingTask.assignee!.name,
+      assigneeAvatar: existingTask.assignee!.avatar,
+      assigneeEmail: existingTask.assignee!.email,
       tags: 'Design, Web',
     });
     expect(fixture.componentInstance.assigneeOptions()).toEqual([existingTask.assignee]);

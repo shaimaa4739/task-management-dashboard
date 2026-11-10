@@ -53,7 +53,10 @@ export function mapTaskDtoToTask(task: TaskDto): Task {
     priority: task.priority,
     column: task.status === 'in_progress' ? 'in-progress' : task.status,
     tag: task.tags.join(', '),
-    assignee: { initials: task.assignee.avatar, name: task.assignee.name },
+    assignee: {
+      initials: task.assignee?.avatar ?? '',
+      name: task.assignee?.name ?? '',
+    },
     status,
   };
 }

@@ -12,9 +12,12 @@ import { StatsSummary } from '../components/stats-summary/stats-summary';
 import { TaskFilterBar } from '../components/task-filter-bar/task-filter-bar';
 import { TaskBoard } from '../components/task-board/task-board';
 import {
+  AssigneeFilterOption,
   BoardColumn,
   FilterId,
   FilterOption,
+  PriorityFilterId,
+  PriorityFilterOption,
   SortId,
   StatCard,
 } from '../models/dashboard.model';
@@ -24,6 +27,13 @@ const FILTERS: FilterOption[] = [
   { id: 'todo', label: 'To Do' },
   { id: 'in-progress', label: 'In Progress' },
   { id: 'done', label: 'Done' },
+];
+
+const PRIORITY_OPTIONS: PriorityFilterOption[] = [
+  { id: 'all', label: 'All priorities' },
+  { id: 'low', label: 'Low' },
+  { id: 'medium', label: 'Medium' },
+  { id: 'high', label: 'High' },
 ];
 
 const PRIORITY_RANK: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
@@ -50,21 +60,50 @@ export class DashboardPage {
   private readonly dialog = inject(MatDialog);
 
   protected readonly filters = FILTERS;
+  protected readonly priorityOptions = PRIORITY_OPTIONS;
+  protected readonly assigneeOptions = computed<AssigneeFilterOption[]>(() => {
+    const options = new Map<string, AssigneeFilterOption>();
+    for (const task of this.taskService.tasks()) {
+      const assignee = task.assignee;
+      if (assignee?.id) {
+        options.set(assignee.id, {
+          id: assignee.id,
+          name: assignee.name,
+          email: assignee.email,
+        });
+      }
+    }
+    return [...options.values()].sort((first, second) => first.name.localeCompare(second.name));
+  });
   protected readonly tasks = computed(() =>
     this.taskService.tasks().map(mapTaskDtoToTask),
   );
   protected readonly searchQuery = this.taskSearch.query;
+  protected readonly filter = signal<FilterId>('all');
+  protected readonly priorityFilter = signal<PriorityFilterId>('all');
+  protected readonly assigneeFilter = signal('all');
+  protected readonly sortBy = signal<SortId>('priority');
+
   protected readonly matchingTasks = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
+    const priority = this.priorityFilter();
+    const assignee = this.assigneeFilter();
     const tasks = this.tasks();
+    const assigneeByTaskId = new Map(
+      this.taskService.tasks().map((task) => [String(task.id), task.assignee?.id]),
+    );
 
-    return query
-      ? tasks.filter(
-          (task) =>
-            task.title.toLowerCase().includes(query) ||
-            task.description.toLowerCase().includes(query),
-        )
-      : tasks;
+    return tasks.filter((task) => {
+      const matchesSearch =
+        !query ||
+        task.title.toLowerCase().includes(query) ||
+        task.description.toLowerCase().includes(query);
+      const matchesPriority = priority === 'all' || task.priority === priority;
+      const matchesAssignee =
+        assignee === 'all' || assigneeByTaskId.get(String(task.id)) === assignee;
+
+      return matchesSearch && matchesPriority && matchesAssignee;
+    });
   });
   protected readonly isLoading = this.taskService.isLoading;
   protected readonly error = this.taskService.error;
@@ -95,9 +134,6 @@ export class DashboardPage {
     ];
   });
 
-  protected readonly filter = signal<FilterId>('all');
-  protected readonly sortBy = signal<SortId>('priority');
-
   protected readonly columns = computed<BoardColumn[]>(() => {
     const sort = SORTS[this.sortBy()];
     const activeFilter = this.filter();
@@ -123,6 +159,14 @@ export class DashboardPage {
 
   protected onFilterChange(filter: FilterId): void {
     this.filter.set(filter);
+  }
+
+  protected onPriorityChange(priority: PriorityFilterId): void {
+    this.priorityFilter.set(priority);
+  }
+
+  protected onAssigneeChange(assignee: string): void {
+    this.assigneeFilter.set(assignee);
   }
 
   protected onSortChange(sort: SortId): void {

@@ -53,7 +53,9 @@ export class TaskForm {
   readonly assigneeOptions = computed(() => {
     const assignees = new Map<string, TaskAssigneeDto>();
     for (const task of this.taskService.tasks()) {
-      assignees.set(task.assignee.id, task.assignee);
+      if (task.assignee?.id) {
+        assignees.set(task.assignee.id, task.assignee);
+      }
     }
     return [...assignees.values()];
   });
@@ -85,10 +87,10 @@ export class TaskForm {
       priority: task?.priority ?? 'medium',
       status: task?.status ?? 'todo',
       dueDate: task?.dueDate ?? '',
-      assigneeId: task?.assignee.id ?? '',
-      assigneeName: task?.assignee.name ?? '',
-      assigneeAvatar: task?.assignee.avatar ?? '',
-      assigneeEmail: task?.assignee.email ?? '',
+      assigneeId: task?.assignee?.id ?? '',
+      assigneeName: task?.assignee?.name ?? '',
+      assigneeAvatar: task?.assignee?.avatar ?? '',
+      assigneeEmail: task?.assignee?.email ?? '',
       tags: task?.tags.join(', ') ?? '',
     });
     this.updateAssigneeValidators();

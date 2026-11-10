@@ -15,7 +15,40 @@
 
   <div class="toolbar__actions">
     <div class="toolbar__select">
-      <select aria-label="Sort tasks" class="toolbar__sort" (change)="onSortChange($event)">
+      <select
+        aria-label="Filter by priority"
+        class="toolbar__sort"
+        [value]="activePriority()"
+        (change)="onPriorityChange($event)"
+      >
+        @for (option of priorityOptions(); track option.id) {
+          <option [value]="option.id">{{ option.label }}</option>
+        }
+      </select>
+      <span aria-hidden="true" class="toolbar__chevron">▾</span>
+    </div>
+
+    <div class="toolbar__select">
+      <select
+        aria-label="Filter by assignee"
+        class="toolbar__sort"
+        [value]="activeAssignee()"
+        (change)="onAssigneeChange($event)"
+      >
+        <option value="all">All assignees</option>
+        @for (assignee of assigneeOptions(); track assignee.id) {
+          <option [value]="assignee.id">{{ assignee.name }} ({{ assignee.email }})</option>
+        }
+      </select>
+      <span aria-hidden="true" class="toolbar__chevron">▾</span>
+    </div>
+
+    <div class="toolbar__select">
+      <select
+        aria-label="Sort tasks"
+        class="toolbar__sort"
+        (change)="onSortChange($event)"
+      >
         <option value="priority" [selected]="sortBy() === 'priority'">Priority</option>
         <option value="due-date" [selected]="sortBy() === 'due-date'">Due date</option>
       </select>

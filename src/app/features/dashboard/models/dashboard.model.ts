@@ -1,11 +1,23 @@
-import { ColumnId, Task } from '../../tasks/models/task.model';
+import { ColumnId, Priority, Task } from '../../tasks/models/task.model';
 
 export type FilterId = 'all' | ColumnId;
+export type PriorityFilterId = 'all' | Priority;
 export type SortId = 'priority' | 'due-date';
 
 export interface FilterOption {
   id: FilterId;
   label: string;
+}
+
+export interface PriorityFilterOption {
+  id: PriorityFilterId;
+  label: string;
+}
+
+export interface AssigneeFilterOption {
+  id: string;
+  name: string;
+  email: string;
 }
 
 export type StatTone = 'success' | 'neutral' | 'danger';

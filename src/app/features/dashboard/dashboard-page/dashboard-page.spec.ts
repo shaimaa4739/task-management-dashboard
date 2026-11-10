@@ -399,4 +399,121 @@ describe('DashboardPage', () => {
       disableClose: true,
     });
   });
+
+  it('filters by priority and preserves all-task statistics and column counts', () => {
+    loadTasks([
+      createTask({ id: 'task-high', title: 'High task', priority: 'high' }),
+      createTask({ id: 'task-low', title: 'Low task', priority: 'low' }),
+      createTask({
+        id: 'task-progress',
+        title: 'High progress',
+        status: 'in_progress',
+        priority: 'high',
+      }),
+    ]);
+
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '[aria-label="Filter by priority"]',
+    )!;
+    select.value = 'high';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(visibleTaskTitles()).toEqual(['High task', 'High progress']);
+    expect(
+      Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('.column__count')).map(
+        (element) => element.textContent?.trim(),
+      ),
+    ).toEqual(['2', '1', '0']);
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('.stat-card__value')?.textContent?.trim(),
+    ).toBe('3');
+
+    select.value = 'all';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+    expect(visibleTaskTitles()).toHaveLength(3);
+  });
+
+  it('derives unique assignee options and safely handles unassigned tasks', () => {
+    loadTasks([
+      createTask({ id: 'task-first', title: 'Assigned one' }),
+      createTask({ id: 'task-second', title: 'Assigned two' }),
+      createTask({ id: 'task-other-user', title: 'Other user', assignee: {
+        id: 'user-002',
+        name: 'Taylor Smith',
+        avatar: 'TS',
+        email: 'taylor@example.com',
+      } }),
+      createTask({ id: 'task-unassigned', title: 'Unassigned', assignee: undefined }),
+    ]);
+
+    const select = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '[aria-label="Filter by assignee"]',
+    )!;
+    expect(Array.from(select.options).map((option) => option.value)).toEqual([
+      'all',
+      'user-001',
+      'user-002',
+    ]);
+    expect(visibleTaskTitles()).toHaveLength(4);
+
+    select.value = 'user-001';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+    expect(visibleTaskTitles()).toEqual(['Assigned one', 'Assigned two']);
+
+    select.value = 'all';
+    select.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+    expect(visibleTaskTitles()).toContain('Unassigned');
+  });
+
+  it('combines priority and assignee filters with status filtering and search', () => {
+    loadTasks([
+      createTask({ id: 'task-match', title: 'Target task alpha', priority: 'high' }),
+      createTask({ id: 'task-priority', title: 'Target task beta', priority: 'low' }),
+      createTask({
+        id: 'task-assignee',
+        title: 'Target task gamma',
+        assignee: {
+          id: 'user-002',
+          name: 'Taylor Smith',
+          avatar: 'TS',
+          email: 'taylor@example.com',
+        },
+      }),
+      createTask({ id: 'task-status', title: 'Target task delta', status: 'in_progress' }),
+    ]);
+    searchFor('target task');
+    selectFilter('To Do');
+
+    const prioritySelect = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '[aria-label="Filter by priority"]',
+    )!;
+    prioritySelect.value = 'high';
+    prioritySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    const assigneeSelect = (fixture.nativeElement as HTMLElement).querySelector<HTMLSelectElement>(
+      '[aria-label="Filter by assignee"]',
+    )!;
+    assigneeSelect.value = 'user-001';
+    assigneeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(visibleTaskTitles()).toEqual(['Target task alpha']);
+
+    prioritySelect.value = 'all';
+    prioritySelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+    expect(visibleTaskTitles()).toEqual(['Target task alpha', 'Target task beta']);
+
+    assigneeSelect.value = 'all';
+    assigneeSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.detectChanges();
+    expect(visibleTaskTitles()).toEqual([
+      'Target task alpha',
+      'Target task gamma',
+      'Target task beta',
+    ]);
+  });
 });
