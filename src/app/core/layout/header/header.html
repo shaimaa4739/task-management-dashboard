@@ -17,6 +17,8 @@
             aria-label="Search tasks"
             placeholder="Search tasks..."
             class="search__input"
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
           />
         </div>
       </div>

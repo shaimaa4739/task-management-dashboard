@@ -24,6 +24,12 @@
       (newTask)="onNewTask()"
     />
 
-    <app-task-board [columns]="columns()" />
+    @if (hasNoMatchingTasks()) {
+      <p class="dashboard-state dashboard-state--empty" role="status">
+        No tasks match your search and filters.
+      </p>
+    } @else {
+      <app-task-board [columns]="columns()" />
+    }
   }
 </div>

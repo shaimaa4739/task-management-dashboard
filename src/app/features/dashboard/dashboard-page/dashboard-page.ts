@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { TaskSearchService } from '../../../core/services/task-search.service';
 import { Priority, Task } from '../../tasks/models/task.model';
 import { TaskService } from '../../tasks/services/task.service';
 import { mapTaskDtoToTask } from '../../tasks/utils/task.mapper';
@@ -41,11 +42,25 @@ const SORTS: Record<SortId, (a: Task, b: Task) => number> = {
 })
 export class DashboardPage {
   private readonly taskService = inject(TaskService);
+  private readonly taskSearch = inject(TaskSearchService);
 
   protected readonly filters = FILTERS;
   protected readonly tasks = computed(() =>
     this.taskService.tasks().map(mapTaskDtoToTask),
   );
+  protected readonly searchQuery = this.taskSearch.query;
+  protected readonly matchingTasks = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const tasks = this.tasks();
+
+    return query
+      ? tasks.filter(
+          (task) =>
+            task.title.toLowerCase().includes(query) ||
+            task.description.toLowerCase().includes(query),
+        )
+      : tasks;
+  });
   protected readonly isLoading = this.taskService.isLoading;
   protected readonly error = this.taskService.error;
 
@@ -81,20 +96,25 @@ export class DashboardPage {
   protected readonly columns = computed<BoardColumn[]>(() => {
     const sort = SORTS[this.sortBy()];
     const activeFilter = this.filter();
-    const tasks = this.tasks();
+    const allTasks = this.tasks();
+    const matchingTasks = this.matchingTasks();
 
     return BOARD_COLUMNS.filter(
       (column) => activeFilter === 'all' || activeFilter === column.id,
     ).map((column) => {
-      const columnTasks = tasks.filter((task) => task.column === column.id);
+      const columnTasks = matchingTasks.filter((task) => task.column === column.id);
 
       return {
         ...column,
-        count: columnTasks.length,
+        count: allTasks.filter((task) => task.column === column.id).length,
         tasks: columnTasks.sort(sort),
       };
     });
   });
+
+  protected readonly hasNoMatchingTasks = computed(() =>
+    this.columns().every((column) => column.tasks.length === 0),
+  );
 
   protected onFilterChange(filter: FilterId): void {
     this.filter.set(filter);
