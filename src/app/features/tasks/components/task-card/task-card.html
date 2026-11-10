@@ -1,0 +1,30 @@
+<article
+  class="task-card"
+  [class]="'task-card--' + task().column"
+  [class.task-card--overdue]="isOverdue()"
+>
+  <div class="task-card__header">
+    <span class="priority-badge" [class]="'priority-badge--' + task().priority">{{ task().priority }}</span>
+    <button
+      type="button"
+      class="task-card__menu"
+      [attr.aria-label]="'Options for ' + task().title"
+    >
+      <span aria-hidden="true">⋮</span>
+    </button>
+  </div>
+
+  <h3 class="task-card__title">{{ task().title }}</h3>
+  <p class="task-card__description">{{ task().description }}</p>
+
+  <p class="task-card__status" [class]="'task-card__status--' + meta().tone">
+    <span aria-hidden="true">{{ meta().icon }}</span>
+    <span>{{ meta().label }}</span>
+  </p>
+  <p class="task-card__tag">{{ task().tag }}</p>
+
+  <footer class="task-card__footer">
+    <span class="avatar task-card__avatar" aria-hidden="true">{{ task().assignee.initials }}</span>
+    <span>&#64;{{ task().assignee.name }}</span>
+  </footer>
+</article>

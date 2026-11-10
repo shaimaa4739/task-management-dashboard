@@ -1,0 +1,84 @@
+@use '../../../../styles/tokens' as *;
+@use '../../../../styles/mixins' as *;
+
+.sidebar {
+  flex-shrink: 0;
+  border-bottom: 1px solid $slate-200;
+  background-color: #fff;
+
+  @include lg {
+    display: flex;
+    width: $sidebar-width;
+    flex-direction: column;
+    border-right: 1px solid $slate-200;
+    border-bottom: 0;
+  }
+}
+
+.sidebar__nav {
+  display: flex;
+  gap: 3px;
+  overflow-x: auto;
+  padding: 0.5rem 0.75rem;
+
+  @include lg {
+    flex-direction: column;
+    overflow: visible;
+    padding: 1rem 1rem 0.5rem;
+  }
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.375rem;
+  font-size: 13px;
+  line-height: 1rem;
+  color: $slate-600;
+  white-space: nowrap;
+  @include transition-colors;
+
+  &:hover {
+    background-color: $slate-100;
+  }
+
+  &.active {
+    background-color: $color-brand;
+    color: #fff;
+
+    &:hover {
+      background-color: $color-brand;
+    }
+  }
+}
+
+.nav-link__icon {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.sidebar__cta {
+  display: none;
+  padding: 2rem 1rem 0;
+
+  @include lg {
+    display: block;
+  }
+}
+
+.sidebar__new-task {
+  width: 100%;
+  padding: 0.375rem 0;
+  border-radius: 0.25rem;
+  background-color: $color-brand;
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  @include transition-colors;
+
+  &:hover {
+    background-color: $color-brand-dark;
+  }
+}

@@ -1,0 +1,20 @@
+    <aside class="sidebar">
+      <nav aria-label="Main" class="sidebar__nav">
+        @for (item of navItems; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="nav-link"
+          >
+            <span aria-hidden="true" class="nav-link__icon">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </nav>
+
+      <div class="sidebar__cta">
+        <button type="button" class="sidebar__new-task">+ New Task</button>
+      </div>
+    </aside>

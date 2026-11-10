@@ -1,0 +1,25 @@
+@use 'tokens' as *;
+
+@mixin md {
+  @media (min-width: 48rem) {
+    @content;
+  }
+}
+
+@mixin lg {
+  @media (min-width: 64rem) {
+    @content;
+  }
+}
+
+@mixin transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: $ease-standard;
+  transition-duration: 150ms;
+}
+
+@mixin transition-shadow {
+  transition-property: box-shadow;
+  transition-timing-function: $ease-standard;
+  transition-duration: 150ms;
+}

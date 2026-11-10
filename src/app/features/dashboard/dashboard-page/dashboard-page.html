@@ -1,0 +1,64 @@
+<h1 class="sr-only">Dashboard</h1>
+
+<div class="dashboard">
+  <section aria-label="Task summary" class="stats">
+    @for (stat of stats; track stat.label) {
+      <article class="surface stat-card">
+        <p class="stat-card__label">
+          <span aria-hidden="true">{{ stat.icon }}</span>
+          <span>{{ stat.label }}</span>
+        </p>
+        <p class="stat-card__value">{{ stat.value }}</p>
+        <p class="stat-card__note" [class]="'stat-card__note--' + stat.tone">{{ stat.note }}</p>
+      </article>
+    }
+  </section>
+
+  <div class="surface toolbar">
+    <div class="toolbar__filters" role="group" aria-label="Filter tasks">
+      @for (option of filters; track option.id) {
+        <button
+          type="button"
+          class="tab-button"
+          [class.active]="filter() === option.id"
+          [attr.aria-pressed]="filter() === option.id"
+          (click)="filter.set(option.id)"
+        >
+          {{ option.label }}
+        </button>
+      }
+    </div>
+
+    <div class="toolbar__actions">
+      <div class="toolbar__select">
+        <select aria-label="Sort tasks" class="toolbar__sort" (change)="onSortChange($event)">
+          <option value="priority" [selected]="sortBy() === 'priority'">Priority</option>
+          <option value="due-date" [selected]="sortBy() === 'due-date'">Due date</option>
+        </select>
+        <span aria-hidden="true" class="toolbar__chevron">▾</span>
+      </div>
+      <button type="button" class="new-task">+ New Task</button>
+    </div>
+  </div>
+
+  <div class="board" [class.board--all]="filter() === 'all'">
+    @for (column of columns(); track column.id) {
+      <section class="column" [attr.aria-labelledby]="'column-' + column.id">
+        <header class="column__header">
+          <h2 [id]="'column-' + column.id" class="column__title">
+            {{ column.title }}
+          </h2>
+          <span class="column__count">
+            {{ column.count }}
+          </span>
+        </header>
+
+        <div class="column__tasks">
+          @for (task of column.tasks; track task.id) {
+            <app-task-card [task]="task" />
+          }
+        </div>
+      </section>
+    }
+  </div>
+</div>
