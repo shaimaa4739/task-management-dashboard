@@ -11,7 +11,10 @@
       </button>
     </div>
   } @else if (tasks().length === 0) {
-    <p class="dashboard-state dashboard-state--empty" role="status">No tasks yet.</p>
+    <div class="dashboard-state dashboard-state--empty" role="status">
+      <p>No tasks yet.</p>
+      <button mat-button type="button" (click)="onNewTask()">Create task</button>
+    </div>
   } @else {
     <app-stats-summary [stats]="stats()" />
 
@@ -29,7 +32,12 @@
         No tasks match your search and filters.
       </p>
     } @else {
-      <app-task-board [columns]="columns()" />
+      <app-task-board
+        [columns]="columns()"
+        (viewTask)="onViewTask($event)"
+        (editTask)="onEditTask($event)"
+        (deleteTask)="onDeleteTask($event)"
+      />
     }
   }
 </div>

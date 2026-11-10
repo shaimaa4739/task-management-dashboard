@@ -12,7 +12,12 @@
 
       <div class="column__tasks">
         @for (task of column.tasks; track task.id) {
-          <app-task-card [task]="task" />
+          <app-task-card
+            [task]="task"
+            (viewTask)="viewTask.emit($event)"
+            (editTask)="editTask.emit($event)"
+            (deleteTask)="deleteTask.emit($event)"
+          />
         }
       </div>
     </section>

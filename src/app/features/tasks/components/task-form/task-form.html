@@ -1,1 +1,121 @@
-<p>task-form works!</p>
+<h2 mat-dialog-title>{{ title }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+	<mat-dialog-content class="task-form">
+		@if (error()) {
+			<p class="task-form__error" role="alert">{{ error() }}</p>
+		}
+
+		<mat-form-field appearance="outline">
+			<mat-label>Task title</mat-label>
+			<input matInput formControlName="title" />
+			@if (form.controls.title.hasError('required') && (form.controls.title.touched || submitted())) {
+				<mat-error>Title is required.</mat-error>
+			} @else if (form.controls.title.hasError('minlength') && form.controls.title.touched) {
+				<mat-error>Title must be at least 3 characters.</mat-error>
+			}
+		</mat-form-field>
+
+		<mat-form-field appearance="outline">
+			<mat-label>Description</mat-label>
+			<textarea matInput rows="3" formControlName="description"></textarea>
+			@if (form.controls.description.hasError('required') && (form.controls.description.touched || submitted())) {
+				<mat-error>Description is required.</mat-error>
+			} @else if (form.controls.description.hasError('minlength') && form.controls.description.touched) {
+				<mat-error>Description must be at least 10 characters.</mat-error>
+			}
+		</mat-form-field>
+
+		<div class="task-form__row">
+			<mat-form-field appearance="outline">
+				<mat-label>Priority</mat-label>
+				<mat-select formControlName="priority">
+					<mat-option value="high">High</mat-option>
+					<mat-option value="medium">Medium</mat-option>
+					<mat-option value="low">Low</mat-option>
+				</mat-select>
+			</mat-form-field>
+
+			<mat-form-field appearance="outline">
+				<mat-label>Status</mat-label>
+				<mat-select formControlName="status">
+					<mat-option value="todo">To Do</mat-option>
+					<mat-option value="in_progress">In Progress</mat-option>
+					<mat-option value="done">Done</mat-option>
+				</mat-select>
+			</mat-form-field>
+		</div>
+
+		<mat-form-field appearance="outline">
+			<mat-label>Due date</mat-label>
+			<input matInput type="date" formControlName="dueDate" />
+			@if (form.controls.dueDate.hasError('required') && (form.controls.dueDate.touched || submitted())) {
+				<mat-error>Due date is required.</mat-error>
+			}
+		</mat-form-field>
+
+		@if (assigneeOptions().length > 0) {
+			<mat-form-field appearance="outline">
+				<mat-label>Assignee</mat-label>
+				<mat-select formControlName="assigneeId">
+					@for (assignee of assigneeOptions(); track assignee.id) {
+						<mat-option [value]="assignee.id">{{ assignee.name }} ({{ assignee.email }})</mat-option>
+					}
+				</mat-select>
+				@if (form.controls.assigneeId.hasError('required') && (form.controls.assigneeId.touched || submitted())) {
+					<mat-error>Assignee is required.</mat-error>
+				}
+			</mat-form-field>
+		} @else {
+			<mat-form-field appearance="outline">
+				<mat-label>Assignee ID</mat-label>
+				<input matInput formControlName="assigneeId" />
+				@if (form.controls.assigneeId.hasError('required') && (form.controls.assigneeId.touched || submitted())) {
+					<mat-error>Assignee ID is required.</mat-error>
+				}
+			</mat-form-field>
+
+			<mat-form-field appearance="outline">
+				<mat-label>Assignee name</mat-label>
+				<input matInput formControlName="assigneeName" />
+				@if (form.controls.assigneeName.hasError('required') && (form.controls.assigneeName.touched || submitted())) {
+					<mat-error>Assignee name is required.</mat-error>
+				}
+			</mat-form-field>
+
+			<mat-form-field appearance="outline">
+				<mat-label>Assignee avatar initials</mat-label>
+				<input matInput formControlName="assigneeAvatar" />
+				@if (form.controls.assigneeAvatar.hasError('required') && (form.controls.assigneeAvatar.touched || submitted())) {
+					<mat-error>Assignee avatar is required.</mat-error>
+				}
+			</mat-form-field>
+
+			<mat-form-field appearance="outline">
+				<mat-label>Assignee email</mat-label>
+				<input matInput type="email" formControlName="assigneeEmail" />
+				@if (form.controls.assigneeEmail.hasError('required') && (form.controls.assigneeEmail.touched || submitted())) {
+					<mat-error>Assignee email is required.</mat-error>
+				} @else if (form.controls.assigneeEmail.hasError('email') && form.controls.assigneeEmail.touched) {
+					<mat-error>Enter a valid email address.</mat-error>
+				}
+			</mat-form-field>
+		}
+
+		<mat-form-field appearance="outline">
+			<mat-label>Tags</mat-label>
+			<input matInput formControlName="tags" placeholder="Design, Planning" />
+		</mat-form-field>
+	</mat-dialog-content>
+
+	<mat-dialog-actions align="end">
+		@if (isViewMode) {
+			<button mat-button type="button" (click)="onCancel()">Close</button>
+		} @else {
+			<button mat-button type="button" [disabled]="pending()" (click)="onCancel()">Cancel</button>
+			<button mat-flat-button type="submit" [disabled]="form.invalid || pending()">
+				{{ pending() ? 'Saving...' : data.mode === 'create' ? 'Create task' : 'Save changes' }}
+			</button>
+		}
+	</mat-dialog-actions>
+</form>

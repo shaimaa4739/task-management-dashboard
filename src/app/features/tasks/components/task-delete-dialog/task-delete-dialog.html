@@ -1,0 +1,15 @@
+<h2 mat-dialog-title>Delete task?</h2>
+
+<mat-dialog-content>
+  <p>“{{ data.taskTitle }}” will be permanently deleted.</p>
+  @if (error()) {
+    <p class="delete-dialog__error" role="alert">{{ error() }}</p>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button type="button" [disabled]="pending()" (click)="onCancel()">Cancel</button>
+  <button mat-flat-button type="button" [disabled]="pending()" (click)="onConfirm()">
+    {{ pending() ? 'Deleting...' : 'Delete' }}
+  </button>
+</mat-dialog-actions>

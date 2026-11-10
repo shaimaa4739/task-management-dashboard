@@ -1,0 +1,38 @@
+@use '../../../../../styles/tokens' as *;
+
+:host {
+	display: block;
+	width: min(36rem, calc(100vw - 2rem));
+}
+
+.task-form {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+	max-height: min(70vh, 42rem);
+}
+
+.task-form__row {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 0.75rem;
+}
+
+.task-form__error {
+	padding: 0.75rem;
+	border: 1px solid $color-danger-soft;
+	border-radius: 0.375rem;
+	background-color: $color-danger-soft;
+	color: $color-danger-text;
+}
+
+mat-form-field {
+	width: 100%;
+}
+
+@media (max-width: 32rem) {
+	.task-form__row {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0;
+	}
+}

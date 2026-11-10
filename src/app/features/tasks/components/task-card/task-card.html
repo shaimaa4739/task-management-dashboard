@@ -8,10 +8,16 @@
     <button
       type="button"
       class="task-card__menu"
+      [matMenuTriggerFor]="taskMenu"
       [attr.aria-label]="'Options for ' + task().title"
     >
       <span aria-hidden="true">⋮</span>
     </button>
+    <mat-menu #taskMenu="matMenu">
+      <button mat-menu-item type="button" (click)="viewTask.emit(task())">View</button>
+      <button mat-menu-item type="button" (click)="editTask.emit(task())">Edit</button>
+      <button mat-menu-item type="button" (click)="deleteTask.emit(task())">Delete</button>
+    </mat-menu>
   </div>
 
   <h3 class="task-card__title">{{ task().title }}</h3>

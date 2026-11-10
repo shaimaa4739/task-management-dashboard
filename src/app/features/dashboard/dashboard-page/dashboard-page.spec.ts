@@ -1,8 +1,14 @@
 import { signal, WritableSignal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MatDialog } from '@angular/material/dialog';
+import { By } from '@angular/platform-browser';
 import { TaskSearchService } from '../../../core/services/task-search.service';
+import { TaskDeleteDialog } from '../../tasks/components/task-delete-dialog/task-delete-dialog';
+import { TaskForm } from '../../tasks/components/task-form/task-form';
 import { TaskDto } from '../../tasks/models/task-api.model';
+import { Task } from '../../tasks/models/task.model';
 import { TaskService } from '../../tasks/services/task.service';
+import { TaskBoard } from '../components/task-board/task-board';
 import { DashboardPage } from './dashboard-page';
 
 function createTask(overrides: Partial<TaskDto> = {}): TaskDto {
@@ -30,6 +36,7 @@ describe('DashboardPage', () => {
   let component: DashboardPage;
   let fixture: ComponentFixture<DashboardPage>;
   let searchQuery: WritableSignal<string>;
+  let dialog: { open: ReturnType<typeof vi.fn> };
   let taskService: {
     tasks: ReturnType<typeof signal<TaskDto[]>>;
     isLoading: ReturnType<typeof signal<boolean>>;
@@ -39,6 +46,7 @@ describe('DashboardPage', () => {
 
   beforeEach(async () => {
     searchQuery = signal('');
+    dialog = { open: vi.fn() };
     taskService = {
       tasks: signal<TaskDto[]>([]),
       isLoading: signal(true),
@@ -51,6 +59,7 @@ describe('DashboardPage', () => {
       providers: [
         { provide: TaskService, useValue: taskService },
         { provide: TaskSearchService, useValue: { query: searchQuery } },
+        { provide: MatDialog, useValue: dialog },
       ],
     }).compileComponents();
 
@@ -96,6 +105,14 @@ describe('DashboardPage', () => {
     fixture.detectChanges();
   }
 
+  function emitTaskAction(
+    action: 'viewTask' | 'editTask' | 'deleteTask',
+    task: Task,
+  ): void {
+    const board = fixture.debugElement.query(By.directive(TaskBoard)).componentInstance as TaskBoard;
+    board[action].emit(task);
+  }
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
@@ -133,6 +150,12 @@ describe('DashboardPage', () => {
     expect(compiled.querySelector('.dashboard-state--loading')).toBeNull();
     expect(compiled.querySelector('.dashboard-state--error')).toBeNull();
     expect(compiled.querySelector('app-task-board')).toBeNull();
+
+    compiled.querySelector<HTMLButtonElement>('.dashboard-state--empty button')?.click();
+    expect(dialog.open).toHaveBeenCalledWith(TaskForm, {
+      data: { mode: 'create' },
+      disableClose: true,
+    });
   });
 
   it('derives statistics and unfiltered board counts from API tasks', () => {
@@ -305,5 +328,75 @@ describe('DashboardPage', () => {
     selectSort('due-date');
 
     expect(visibleTaskTitles()).toEqual(['Plan sooner task', 'Plan middle task', 'Plan later task']);
+  });
+
+  it('opens the create dialog from the existing New Task action', () => {
+    loadTasks([createTask()]);
+    const newTaskButton = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.new-task',
+    );
+    newTaskButton?.click();
+
+    expect(dialog.open).toHaveBeenCalledWith(TaskForm, {
+      data: { mode: 'create' },
+      disableClose: true,
+    });
+  });
+
+  it('opens view and edit dialogs with the original API DTO', () => {
+    const originalDto = createTask({
+      tags: ['Design', 'Research'],
+      assignee: {
+        id: 'user-original',
+        name: 'Original Assignee',
+        avatar: 'OA',
+        email: 'original@example.com',
+      },
+    });
+    loadTasks([originalDto]);
+    const mappedTask: Task = {
+      id: originalDto.id,
+      title: originalDto.title,
+      description: originalDto.description,
+      priority: originalDto.priority,
+      column: 'todo',
+      tag: 'Design, Research',
+      assignee: { initials: 'OA', name: 'Original Assignee' },
+      status: { kind: 'due', label: 'Due in 5 days', dueInDays: 5 },
+    };
+
+    emitTaskAction('viewTask', mappedTask);
+    expect(dialog.open).toHaveBeenLastCalledWith(TaskForm, {
+      data: { mode: 'view', task: originalDto },
+      disableClose: true,
+    });
+
+    emitTaskAction('editTask', mappedTask);
+    expect(dialog.open).toHaveBeenLastCalledWith(TaskForm, {
+      data: { mode: 'edit', task: originalDto },
+      disableClose: true,
+    });
+  });
+
+  it('opens the delete confirmation with the selected task identity', () => {
+    const taskDto = createTask({ id: 'task-to-delete', title: 'Delete this task' });
+    loadTasks([taskDto]);
+    const mappedTask: Task = {
+      id: taskDto.id,
+      title: taskDto.title,
+      description: taskDto.description,
+      priority: taskDto.priority,
+      column: 'todo',
+      tag: 'Testing',
+      assignee: { initials: 'JD', name: 'Jordan Doe' },
+      status: { kind: 'due', label: 'Due in 5 days', dueInDays: 5 },
+    };
+
+    emitTaskAction('deleteTask', mappedTask);
+
+    expect(dialog.open).toHaveBeenCalledWith(TaskDeleteDialog, {
+      data: { taskId: 'task-to-delete', taskTitle: 'Delete this task' },
+      disableClose: true,
+    });
   });
 });

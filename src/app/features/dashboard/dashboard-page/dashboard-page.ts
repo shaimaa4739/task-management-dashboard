@@ -1,5 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { TaskSearchService } from '../../../core/services/task-search.service';
+import { TaskDeleteDialog } from '../../tasks/components/task-delete-dialog/task-delete-dialog';
+import { TaskForm, TaskFormDialogData } from '../../tasks/components/task-form/task-form';
 import { Priority, Task } from '../../tasks/models/task.model';
 import { TaskService } from '../../tasks/services/task.service';
 import { mapTaskDtoToTask } from '../../tasks/utils/task.mapper';
@@ -36,13 +40,14 @@ const SORTS: Record<SortId, (a: Task, b: Task) => number> = {
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [StatsSummary, TaskFilterBar, TaskBoard],
+  imports: [MatButtonModule, StatsSummary, TaskFilterBar, TaskBoard],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPage {
   private readonly taskService = inject(TaskService);
   private readonly taskSearch = inject(TaskSearchService);
+  private readonly dialog = inject(MatDialog);
 
   protected readonly filters = FILTERS;
   protected readonly tasks = computed(() =>
@@ -128,7 +133,32 @@ export class DashboardPage {
     this.taskService.reload();
   }
 
+  protected onViewTask(task: Task): void {
+    const taskDto = this.taskService.tasks().find((item) => item.id === task.id);
+    if (taskDto) {
+      this.openTaskForm({ mode: 'view', task: taskDto });
+    }
+  }
+
+  protected onEditTask(task: Task): void {
+    const taskDto = this.taskService.tasks().find((item) => item.id === task.id);
+    if (taskDto) {
+      this.openTaskForm({ mode: 'edit', task: taskDto });
+    }
+  }
+
+  protected onDeleteTask(task: Task): void {
+    this.dialog.open(TaskDeleteDialog, {
+      data: { taskId: String(task.id), taskTitle: task.title },
+      disableClose: true,
+    });
+  }
+
   protected onNewTask(): void {
-    // TODO: open the new-task dialog / navigate to the create form
+    this.openTaskForm({ mode: 'create' });
+  }
+
+  private openTaskForm(data: TaskFormDialogData): void {
+    this.dialog.open(TaskForm, { data, disableClose: true });
   }
 }

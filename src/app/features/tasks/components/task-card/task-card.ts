@@ -1,15 +1,20 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
+import { MatMenuModule } from '@angular/material/menu';
 import { Task } from '../../models/task.model';
 
 type StatusTone = 'danger' | 'neutral' | 'success';
 
 @Component({
   selector: 'app-task-card',
+  imports: [MatMenuModule],
   templateUrl: './task-card.html',
   styleUrl: './task-card.scss',
 })
 export class TaskCard {
   readonly task = input.required<Task>();
+  readonly viewTask = output<Task>();
+  readonly editTask = output<Task>();
+  readonly deleteTask = output<Task>();
 
   protected readonly isOverdue = computed(() => this.task().status.kind === 'overdue');
 
