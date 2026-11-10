@@ -74,4 +74,22 @@ export interface TasksResponse {
     lastUpdated: string;
   };
 }
+
+  ## Local JSON Server API
+
+  Start the mock API from the project root with:
+
+  ```bash
+  npm run api
+  ```
+
+  The JSON Server database is generated from the `tasks` records in `tasks.json`.
+  It exposes `GET /tasks`, `GET /tasks/:id`, `POST /tasks`, `PATCH /tasks/:id`,
+  and `DELETE /tasks/:id`; `GET /tasks` returns a JSON array. The source
+  `tasks.json` wrapper and `statistics.json` remain separate generated artifacts.
+
+  Run `node data-fetching/generate-data.js` to regenerate all three JSON files.
+  This resets local JSON Server mutations by replacing `db.json` with freshly
 ```
+  `tasks.json` without changing the generated artifacts, run
+  `node data-fetching/generate-data.js --db-only`.

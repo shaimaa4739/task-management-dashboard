@@ -429,6 +429,21 @@ function writeJsonFile(filename, data) {
   console.log(`✅ Generated: ${filename}`);
 }
 
+function readExistingTasks() {
+  const filePath = path.join(__dirname, 'tasks.json');
+  const taskData = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+  if (!Array.isArray(taskData.tasks)) {
+    throw new Error('tasks.json must contain a tasks array');
+  }
+
+  return taskData.tasks;
+}
+
+function generateDatabaseFromExistingTasks() {
+  writeJsonFile('db.json', { tasks: readExistingTasks() });
+}
+
 /**
  * Main execution
  */
@@ -436,6 +451,12 @@ function main() {
   console.log('🚀 Generating fresh data with dynamic dates...\n');
 
   try {
+    if (process.argv.includes('--db-only')) {
+      console.log('Generating the JSON Server database from existing tasks.json...\n');
+      generateDatabaseFromExistingTasks();
+      return;
+    }
+
     // Generate and write statistics
     const statistics = generateStatistics();
     writeJsonFile('statistics.json', statistics);
@@ -443,6 +464,7 @@ function main() {
     // Generate and write tasks
     const tasks = generateTasks();
     writeJsonFile('tasks.json', tasks);
+    writeJsonFile('db.json', { tasks: tasks.tasks });
 
     console.log('\n✨ All data files generated successfully!');
     console.log(`📅 Generated on: ${new Date().toLocaleString()}`);
